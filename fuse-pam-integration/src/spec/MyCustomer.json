@@ -1,0 +1,58 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "MyCustomer",
+    "description": "My Customer Demo",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/id/{idno}": {
+      "get": {
+        "description": "Get customer information by Customer ID number",
+        "responses": {
+          "200": {
+            "description": "Fetched customer data.",
+            "schema": {
+              "$ref": "#/definitions/Customer"
+            }
+          }
+        }
+      },
+      "put": {
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Customer"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created customer."
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "idno",
+          "in": "path",
+          "description": "Customer ID Number",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "Customer": {
+      "properties": {
+        "age": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

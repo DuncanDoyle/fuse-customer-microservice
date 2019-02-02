@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring       http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+        <dataFormats>
+            <json id="serializer" library="Jackson"/>
+        </dataFormats>
+        <restConfiguration apiContextPath="api-docs" bindingMode="json" component="undertow" contextPath="/customer" enableCORS="true" port="8082">
+            <apiProperty key="cors" value="true"/>
+            <apiProperty key="api.title" value="Customer Service"/>
+            <apiProperty key="api.version" value="1.0.0"/>
+        </restConfiguration>
+        <rest id="rest-a72fa87f-ab41-4316-a49c-dab389f8fd3f">
+            <get id="get-1845aa18-dd86-40f0-9bdf-383d749a2ab6" uri="/{idno}">
+                <description>Get customer information by Customer ID number</description>
+                <param dataType="string" description="Customer ID Number" name="idno" required="true" type="path"/>
+                <to uri="direct:getCustomer"/>
+            </get>
+            <put id="put-d15455c0-bf6e-4b92-8d5e-07a5dd208fa8" uri="/{idno}">
+                <param dataType="string" description="Customer ID Number" name="idno" required="true" type="path"/>
+                <param name="body" required="true" type="body"/>
+                <responseMessage code="201" message="Customer Created"/>
+                <to uri="direct:putCustomer"/>
+            </put>
+            <post id="post-e15455c0-bf6e-4b92-8d5e-07a5dd208fa8" uri="/">
+            	<param name="body" required="true" type="body"/>
+                <responseMessage code="201" message="Customer Created"/>
+                <to uri="direct:postCustomer"/>
+            </post>
+            <delete id="delete-d20634d8-4c07-44bb-b91f-b2b4c8636b87" uri="/{idno}">
+                <param dataType="string" description="Customer ID Number" name="idno" required="true" type="path"/>
+                <to uri="direct:deleteCustomer"/>
+            </delete>
+        </rest>
+        <route id="get-customer-route">
+            <from id="getCustomer" uri="direct:getCustomer"/>
+            <log id="_log1" message="Headers: ${in.headers}"/>
+            <to id="_to1" uri="bean:customerRepository?method=getCustomer(${in.header.idno})"/>
+            <log id="_log2" message="Body: ${body}"/>
+            <choice id="_choice1">
+                <when id="_when1">
+                    <simple>${body} == null</simple>
+                    <setHeader headerName="Exchange.HTTP_RESPONSE_CODE" id="setHeaderNotFound">
+                        <constant>404</constant>
+                    </setHeader>
+                </when>
+            </choice>
+        </route>
+        <route id="put-customer-route">
+            <from id="putCustomer" uri="direct:putCustomer"/>
+            <log id="headers-log-put-customer" message="Headers: ${in.headers}"/>
+            <log id="input-log" message=">>> ${body}"/>
+            <to id="_to2" uri="bean:customerRepository?method=updateCustomer(${in.header.idno}, ${body})"/>
+            <setHeader headerName="Exchange.HTTP_RESPONSE_CODE" id="_setHeader1">
+                <constant>200</constant>
+            </setHeader>
+        </route>
+        <route id="post-customer-route">
+            <from id="postCustomer" uri="direct:postCustomer"/>
+            <log id="post-input-log" message=">>> ${body}"/>
+            <to id="_toPostAddCustomer" uri="bean:customerRepository?method=addCustomer(${body})"/>
+            <setHeader headerName="Exchange.HTTP_RESPONSE_CODE" id="_setHeader2">
+                <constant>201</constant>
+            </setHeader>
+        </route>
+        <route id="delete-customer-route">
+            <from id="deleteCustomer" uri="direct:deleteCustomer"/>
+            <log id="headers-log-delete-customer" message="Headers: ${in.headers}"/>
+            <to id="_to3" uri="bean:customerRepository?method=removeCustomer(${in.header.idno})"/>
+        </route>
+    </camelContext>
+</beans>
