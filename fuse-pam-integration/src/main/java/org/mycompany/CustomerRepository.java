@@ -3,6 +3,9 @@ package org.mycompany;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.mycompany.exception.CustomerExistsException;
+import org.mycompany.exception.CustomerNotFoundException;
+
 /**
  * Very simple impl of a customer repository.
  * 
@@ -17,11 +20,17 @@ public class CustomerRepository {
     }
 
     public void addCustomer(Map<String, Object> payload) {
-        String id = (String)    payload.get("id");
+        String id = (String) payload.get("id");
+        if (customers.containsKey(id)) {
+            throw new CustomerExistsException();
+        }
         customers.put(id, payload);
     }
     
     public void updateCustomer(String id, Map<String, Object> payload) {
+        if (!customers.containsKey(id)) {
+            throw new CustomerNotFoundException();
+        }
         customers.put(id, payload);
     }
     
